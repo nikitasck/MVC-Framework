@@ -1,0 +1,14 @@
+{
+    "name": "nikitasokolov/registration-form",
+    "autoload": {
+        "psr-4": {
+            "Nikitasokolov\\RegistrationForm\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Nikita"
+        }
+    ],
+    "require": {}
+}
