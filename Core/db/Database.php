@@ -10,14 +10,13 @@ class Database
 
     public function __construct(array $config) 
     {   
-        $serverName = $config['serverName'];
-        $dbName = $config['dbName'];
-        $userNameDB = $config['userNameDB'];
-        $password = $config['password'];
+        $dsn = $config['dsn'];
+        $db_user = $config['db_user'];
+        $db_password = $config['db_password'];
 
         //connection to db
         try {
-            $this->pdo = new \PDO("mysql:host=$serverName;dbname=$dbName", $userNameDB, $password);
+            $this->pdo = new \PDO($dsn, $db_user, $db_password);
         } catch (PDOException $e) {
             echo 'Error: ' . $e->getMessage();
         }
