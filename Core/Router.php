@@ -20,7 +20,7 @@ class Router
 {
     private Request $request;
     private Response $response;
-    private Array $routes;
+    protected array $routes = [];
 
     public function __construct(Request $request, Response $response)
     {
@@ -29,13 +29,13 @@ class Router
     }
 
     //Router->get('route', [ControllerNmae:class, methodName]);
-    public function get(String $path, Array $callback)
+    public function get(String $path, $callback)
     {
         $this->routes['get'][$path] = $callback;
     }
 
     //Router->post('route', [ControllerNmae:class, methodName]);
-    public function post(String $path, Array $callback)
+    public function post(String $path, $callback)
     {
         $this->routes['post'][$path] = $callback;
     }
@@ -52,10 +52,10 @@ class Router
     */
     public function resolve()
     {
-        $method = $this->request->getMethod;
-        $path = $this->request->getUrl;
+        $method = $this->request->getMethod();
+        $path = $this->request->getUrl();
 
-        $callback = $this->routes[$path][$method] ?? false;
+        $callback = $this->routes[$method][$path] ?? false;
 
         if($callback === false) {
             //throw new routeException();
@@ -63,22 +63,27 @@ class Router
 
         //Если передали просто строку, то это ссылка на представление
         if(is_string($callback)) {
-            //Application::$app->view->renderView($callback);
+            return Application::$app->view->inputContent($callback);
         }
 
          //создаем сущность. Передаем в контроллер приложения эту сущность  
-        if(is_array($callback)){
+         if(is_array($callback)){
             $controller = new $callback[0]();
             
             //Application::$app->controller = $controller;//Передаем созданную сущность приложению.
             $controller->action = $callback[1]; //Используем метод Контроллера для получения дайствия.
             $callback[0] = $controller; //Передаю сущность контроллера
-
+                
             //Тут можно реализовать выполнения всех middleware
         }
 
+        $test = $callback = $this->routes[$path][$method] ?? false;
+        echo 'Route var:-----' . var_dump($this->routes) . '<br>';
+        echo 'method var:-----' . var_dump($test) . '<br>';
         // Вызываем выполнения controller->action с параметрами request и response. -------Не ясно, а как используются параметры request и response
         return call_user_func($callback, $this->request, $this->response);
+
+
     }
 }
 
