@@ -16,10 +16,10 @@ class Database
 
         //connection to db
         try {
-            $this->pdo = new \PDO($dsn, $db_user, $db_password);
+            $this->pdo = new \PDO($dsn,$db_user,$db_password);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            echo 'Error: ' . $e->getMessage();
+            echo "Error in database:" . $e->getMessage();
         }
     }
 
