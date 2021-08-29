@@ -11,23 +11,25 @@ get body - Возвращает запрос целиком, разделяем 
 
 */
 
+
 class Request
 {
     public function getUrl()
     {
         // ---------------------------После завершения всего приложения, протестировать: подставить в Server свойство PATH_INFO
         //Отсекаем все, что после '?'
-        $position = strpos($_SERVER['REQUEST_URI'], '?');
+        $path = $_SERVER['REQUEST_URI'] ?? '/';
+        $position = strpos($path, '?');
 
         //Если url пусто, то взрвращаем пустой путь
         if($position === false) {
-            return $position;
+            return $path;
         }
 
         /*Отсекаем запрашиваемый url
             Допустим, путь выглядит так sit.com/contact/about-us?id=1, этот метод возвращает такой результат: /contact/about-us
         */
-        $url = substr($_SERVER['REQUEST_URI'], 0, $position);
+        $url = substr($path, 0, $position);
 
         return $url;
     }
@@ -72,5 +74,4 @@ class Request
         return $body;
     }
 }
-
 ?>
