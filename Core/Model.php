@@ -55,24 +55,33 @@ abstract class Model
             }
             //Cheking for rules matching
             if($ruleName === self::RULE_REQUIRED && !$attr) {//If attrubute will empty, or rule name mathched with rules -> will push error 
-                //write error;
+                $this->addErrorForRule($attribute, self::RULE_REQUIRED);
             }
             if($ruleName === self::RULE_EMAIL && !filter_var($attr, FILTER_VALIDATE_EMAIL)) {//If email attribute doesnt be email, or rule name mathched with rules -> will push error 
-                //write error;
+                $this->addErrorForRule($attribute, self::RULE_EMAIL);
             }
             if($ruleName === self::RULE_MIN && (strlen($attr) < $rule['min'])) {//If attribute size will be smaller than the rule defined min value, or rule name mathched with rules -> will push error 
-                //write error;
+                $this->addErrorForRule($attribute, self::RULE_MIN, $rule);
             }
             if($ruleName === self::RULE_MAX && (strlen($attr > $rule['max']))) {//If attribute size will be bigger than the rule defined min value, or rule name mathched with rules -> will push error 
-                //write error;
+                $this->addErrorForRule($attribute, self::RULE_MAX, $rule);
             }
             if($ruleName === self::RULE_MATCH && $attr !=$this->{$rule['match']}) {//If attrubute doesnt exist in model, or rule name mathched with rules -> will push error 
-                //write error;
+                $rule = $this->getLabel($rule['match']);
+                $this->addErrorForRule($attribute, self::RULE_MATCH, $rule);
             } 
-            if($ruleName === self::RULE_UNIQUE) {//If attrubute doesnt matched with setted match value, or rule name mathched with rules -> will push error 
+            if($ruleName === self::RULE_UNIQUE) {//If attrubute doesnt matched with setted match value, or rule name mathched with rules -> will push error | retrive rule looks sent [self::RULE_UNIQUE, 'class' = 'password']
+                $className = $rule['class'];
+                $uniqueAttribute = $rule['attribute'] ?? $attribute;
+                $tableName = $className::tableName();
                 
-                
-                //write error;
+                $statement = Application::$app->db->prepare("SELECT * FROM $tableName WHERE $uniqueAttribute = :attr");
+                $statement->bindValue(":attr", $attr);
+                $statement->execute();
+                $record = $statement->fetchObject();
+                if($record) {
+                    $this->addErrorForRule($attribute, SELF::RULE_UNIQUE, ['field' => $this->getLabel($attribute)]);
+                }
             }
         }
 
