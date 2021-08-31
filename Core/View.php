@@ -10,10 +10,12 @@ namespace app\Core;
 
 class View
 {
+
+
     //Заменяет участок {{content}} на вью или контент(текст). Принимает в себя что нужно заменить($subject) и где($layout)
     public function contentSection($subject, $layout)
     {
-        return str_replace('{{content}}', $subject, $layout);
+        return str_replace("{{content}}", $subject, $layout);
     }
 
     /*
@@ -31,7 +33,7 @@ class View
         //Буферизация нужна, так как если скотпрь начел отправку заголовков, могут быть проблемы с отображением
         //Вк
         ob_start();
-        include_once Application::$rootDir."/views/layouts/$layout.php";//Подключение жиректории, в которой находится шаблон для отрисовки.
+        include_once Application::$rootDir."/Views/Layouts/$layout.php";//Подключение жиректории, в которой находится шаблон для отрисовки.
         return ob_get_clean();
     }
 
@@ -46,7 +48,7 @@ class View
 
         //Теперь подключаем представление
         ob_start();
-        include_once Application::$rootDir."/views/$view.php";
+        include_once Application::$rootDir."/Views/$view.php";
         return ob_get_clean();
     }
 
@@ -56,7 +58,7 @@ class View
         $viewContent = $this->renderView($view, $params);
         $viewLayout = $this->renderLayout(); //Прорисовывыем Шаблон
         //Заменяем участки в шаблоне(layout) {{content}} на представление content
-        return $this->contentSection($viewLayout, $viewContent);
+        return $this->contentSection($viewContent, $viewLayout);
     }
 
     /*

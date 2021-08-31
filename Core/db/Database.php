@@ -6,7 +6,7 @@ use PDOException;
 
 class Database
 {
-    private \PDO $pdo;
+    public \PDO $pdo;
 
     public function __construct(array $config) 
     {   
@@ -25,7 +25,7 @@ class Database
 
     public function prepare($sql)
     {
-        $this->pdo->prepare($sql);
+        return $this->pdo->prepare($sql);
     }
 }
 

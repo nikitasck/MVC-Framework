@@ -76,11 +76,7 @@ class Router
                 
             //Тут можно реализовать выполнения всех middleware
         }
-
-        $test = $callback = $this->routes[$path][$method] ?? false;
-        echo 'Route var:-----' . var_dump($this->routes) . '<br>';
-        echo 'method var:-----' . var_dump($test) . '<br>';
-        // Вызываем выполнения controller->action с параметрами request и response. -------Не ясно, а как используются параметры request и response
+        // Вызываем выполнения controller->action с параметрами request и response. --------А нужны ли эти параметры?
         return call_user_func($callback, $this->request, $this->response);
 
 

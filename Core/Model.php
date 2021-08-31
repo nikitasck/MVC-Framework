@@ -66,7 +66,7 @@ abstract class Model
             if($ruleName === self::RULE_MAX && (strlen($attr > $rule['max']))) {//If attribute size will be bigger than the rule defined min value, or rule name mathched with rules -> will push error 
                 $this->addErrorForRule($attribute, self::RULE_MAX, $rule);
             }
-            if($ruleName === self::RULE_MATCH && $attr !=$this->{$rule['match']}) {//If attrubute doesnt exist in model, or rule name mathched with rules -> will push error 
+            if($ruleName === self::RULE_MATCH && $attr != $this->{$rule['match']}) {//If attrubute doesnt exist in model, or rule name mathched with rules -> will push error 
                 $rule = $this->getLabel($rule['match']);
                 $this->addErrorForRule($attribute, self::RULE_MATCH, $rule);
             } 
