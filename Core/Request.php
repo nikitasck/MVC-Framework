@@ -59,15 +59,15 @@ class Request
     {
         $body = [];
 
-        if($this->isGet() === 'get') { //Я думаю, что сравнение здесь не нужно, надо будет затестить!
+        if($this->getMethod() === 'get') { //Я думаю, что сравнение здесь не нужно, надо будет затестить!
             foreach($_GET as $key => $value) {
-                $body['get'] = filter_input(INPUT_GET, $value, FILTER_SANITIZE_SPECIAL_CHARS);//Очищаем входные данные от не нужных символов
+                $body[$key] = filter_input(INPUT_GET, $key, FILTER_SANITIZE_SPECIAL_CHARS);//Очищаем входные данные от не нужных символов
             }
         }
 
-        if($this->isPost() === 'post') { //Я думаю, что сравнение здесь не нужно, надо будет затестить!
+        if($this->getMethod() === 'post') { //Я думаю, что сравнение здесь не нужно, надо будет затестить!
             foreach($_POST as $key => $value) {
-                $body['post'] = filter_input(INPUT_POST, $value, FILTER_SANITIZE_SPECIAL_CHARS);//Очищаем входные данные от не нужных символов
+                $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);//Очищаем входные данные от не нужных символов
             }
         }
 

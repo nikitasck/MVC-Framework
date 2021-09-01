@@ -5,6 +5,7 @@ namespace app\Core;
 use app\Core\Request;
 use app\Core\Response;
 use app\Core\Application;
+use app\Core\exception\NotFoundException;
 
 /*
 
@@ -58,7 +59,7 @@ class Router
         $callback = $this->routes[$method][$path] ?? false;
 
         if($callback === false) {
-            //throw new routeException();
+            throw new NotFoundException();
         }
 
         //Если передали просто строку, то это ссылка на представление
@@ -70,11 +71,14 @@ class Router
          if(is_array($callback)){
             $controller = new $callback[0]();
             
-            //Application::$app->controller = $controller;//Передаем созданную сущность приложению.
+            Application::$app->controller = $controller;//Передаем созданную сущность приложению.
             $controller->action = $callback[1]; //Используем метод Контроллера для получения дайствия.
             $callback[0] = $controller; //Передаю сущность контроллера
                 
-            //Тут можно реализовать выполнения всех middleware
+            //Тут реализовать выполнения всех middleware
+            foreach($controller->getMiddlewares() as $middleware) {
+                $middleware->execute();
+            }
         }
         // Вызываем выполнения controller->action с параметрами request и response. --------А нужны ли эти параметры?
         return call_user_func($callback, $this->request, $this->response);
