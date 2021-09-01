@@ -5,18 +5,18 @@ use app\Core\UserModel;
 
 class User extends UserModel 
 {
-    protected $firstName;
-    protected $lastName;
-    protected $email;
-    protected $password;
-    protected $confirmPassword;
+    public string $firstname = "";
+    public string $lastname = "";
+    public string $email = "";
+    public string $password = "";
+    public string $confirmPassword = "";
 
     public function rules(): array
     {
         return [
-            'firstName' => [self::RULE_REQUIRED],
+            'firstname' => [self::RULE_REQUIRED],
             'lastname' => [self::RULE_REQUIRED],
-            'email' => [self::RULE_REQUIRED, self::RULE_EMAIL, self::RULE_UNIQUE],
+            'email' => [self::RULE_REQUIRED, self::RULE_EMAIL, [self::RULE_UNIQUE, 'class' => self::class ]],
             'password' => [self::RULE_REQUIRED, [self::RULE_MIN, 'min' => 8]],
             'confirmPassword' => [self::RULE_REQUIRED, [self::RULE_MATCH, 'match' => 'password']]
         ];
@@ -35,19 +35,18 @@ class User extends UserModel
     public function attributes(): array
     {
         return [
-            'firstName',
-            'lastName',
+            'firstname',
+            'lastname',
             'email',
-            'password',
-            'confirmPassword'
+            'password'
         ];
     }
 
     public function labels(): array
     {
         return [
-            'firstName' => 'First Name',
-            'lastName' => 'Second Name',
+            'firstname' => 'First Name',
+            'lastname' => 'Second Name',
             'email' => 'Email',
             'password' => 'Password',
             'confirmPassword' => 'Confirm Password'
@@ -56,7 +55,7 @@ class User extends UserModel
 
     public function getDisplayName(): string
     {
-        return $this->firstName . " " . $this->lastName;
+        return $this->firstname . ' ' . $this->lastname;
     }
 
     //Переопределем радительский метод сохранения модели. Хешируем пароль с использыванием соли.
