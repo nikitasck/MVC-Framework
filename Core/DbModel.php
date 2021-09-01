@@ -15,8 +15,6 @@ abstract class DbModel extends Model
     abstract public function primaryKey(): string;
     //return array[string] names of model attributes
     abstract public function attributes(): array;
-    //return labels for attributes, example: arrar['firstName' => 'First Name']
-    abstract public function labels(): array;
 
     public function save()
     {
@@ -26,7 +24,9 @@ abstract class DbModel extends Model
         //Приводим атрибуты к виду благоприятному для подстанивки в запросе.
         $params = array_map(fn($attr) => ":$attr", $attributes);
 
-        $sql = "INSERT INTO $tableName (" . implode(',', $attributes) . ") VALUES (" . implode(',', $params) . ")";
+        
+
+        $sql = "INSERT INTO $tableName (" . implode(',', $attributes) . ") VALUES(" . implode(',', $params) . ")";
 
         $statement = self::prepare($sql);
 
@@ -57,7 +57,7 @@ abstract class DbModel extends Model
         $statement->execute();
 
         //Возвращает сущность класса(класса, в котором вызывается данный метод) с свойствами(атрибутами) соответствующим с столбцами таблицы.
-        return $statement->fetchObject(self::class);
+        return $statement->fetchObject(static::class);
     }
 
     public static function prepare($sql)

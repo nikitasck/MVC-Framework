@@ -60,10 +60,10 @@ abstract class Model
             if($ruleName === self::RULE_EMAIL && !filter_var($attr, FILTER_VALIDATE_EMAIL)) {//If email attribute doesnt be email, or rule name mathched with rules -> will push error 
                 $this->addErrorForRule($attribute, self::RULE_EMAIL);
             }
-            if($ruleName === self::RULE_MIN && (strlen($attr) < $rule['min'])) {//If attribute size will be smaller than the rule defined min value, or rule name mathched with rules -> will push error 
+            if($ruleName === self::RULE_MIN && strlen($attr) < $rule['min']) {//If attribute size will be smaller than the rule defined min value, or rule name mathched with rules -> will push error 
                 $this->addErrorForRule($attribute, self::RULE_MIN, $rule);
             }
-            if($ruleName === self::RULE_MAX && (strlen($attr > $rule['max']))) {//If attribute size will be bigger than the rule defined min value, or rule name mathched with rules -> will push error 
+            if($ruleName === self::RULE_MAX && strlen($attr) > $rule['max']) {//If attribute size will be bigger than the rule defined min value, or rule name mathched with rules -> will push error 
                 $this->addErrorForRule($attribute, self::RULE_MAX, $rule);
             }
             if($ruleName === self::RULE_MATCH && $attr != $this->{$rule['match']}) {//If attrubute doesnt exist in model, or rule name mathched with rules -> will push error 
@@ -96,7 +96,7 @@ abstract class Model
     }
 
     //Replaced {{error}} are from views
-    public function addErrorForRule(string $attribute, string $rule, array $params = [])
+    public function addErrorForRule($attribute, $rule, $params = [])
     {
         $message = $this->ruleMassegase()[$rule] ?? 'Message for this rule not created';
 
