@@ -21,7 +21,7 @@ class View
     /*
     Загружает шабон, так называемый макет.
     */
-    public function renderLayout()
+    public function renderLayout($params = [])
     {
         $layout = Application::$app->layout; //Базовый шаблон приложения
 
@@ -30,6 +30,9 @@ class View
             $layout = Application::$app->controller->layout;
         }
 
+        foreach($params as $key => $value) {
+            $$key = $value;
+        }
         //Буферизация нужна, так как если скотпрь начел отправку заголовков, могут быть проблемы с отображением
         //Вк
         ob_start();
@@ -56,7 +59,7 @@ class View
     public function resolveView($view, $params = [])
     {
         $viewContent = $this->renderView($view, $params);
-        $viewLayout = $this->renderLayout(); //Прорисовывыем Шаблон
+        $viewLayout = $this->renderLayout($params); //Прорисовывыем Шаблон
         //Заменяем участки в шаблоне(layout) {{content}} на представление content
         return $this->contentSection($viewContent, $viewLayout);
     }

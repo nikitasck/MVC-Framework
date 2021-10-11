@@ -6,6 +6,7 @@ use app\Core\Request;
 use app\Core\Response;
 use app\Core\Application;
 use app\Core\exception\NotFoundException;
+use PDO;
 
 /*
 
@@ -22,6 +23,7 @@ class Router
     private Request $request;
     private Response $response;
     protected array $routes = [];
+    public $params = [];
 
     public function __construct(Request $request, Response $response)
     {
@@ -29,61 +31,124 @@ class Router
         $this->response = $response;
     }
 
-    //Router->get('route', [ControllerNmae:class, methodName]);
-    public function get(String $path, $callback)
+
+
+    //Adds to an $routes array passed data into 'get' key: 
+    //Router->get('route', [ControllerNmae:class, methodName], ['{param}']);
+    //Params for callback empty for default.If any params passed to the get method, it will be put in array with callback.
+    public function get(String $path, $callback, $params = [])
     {
-        $this->routes['get'][$path] = $callback;
+        
+        if(count($params)) {
+            $this->routes['get'][$path] = [$callback, $params];
+        } else {
+            $this->routes['get'][$path] = [$callback];
+        }
+        
+
+        //$this->routes['get'][$path] = $callback;
     }
 
+    //Adds to an $routes array passed data into 'get' key: 
     //Router->post('route', [ControllerNmae:class, methodName]);
-    public function post(String $path, $callback)
+    public function post(String $path, $callback, $param = '')
     {
-        $this->routes['post'][$path] = $callback;
+        $this->routes['post'][$path] = [$callback];
     }
 
-    /*
-    Метод для совершения маршрутизации
+    //Возвращает маршрут отсортированный маршрут, который соотвествует заданному в routes[]. 
+    //Получает маршрут от сервера и выбирает максимально схожий маршрут из роутера.
+    public function filterRequestPath($reqPath, $method)
+    {
+        //Получение маршрутов из routes[] по требуемому методу.
+        $test = array_keys($this->routes[$method]);
 
-    Принимает в себя метод и путь от обьекта Request.
+        //Перебираю маршруты
+        foreach($test as $value) {
 
-    Далее, проверяется, есть ли существующий путь, если нет, то передается исключение.
-    Потом, проверяется, является ли callback функция строко или массивом. Если строка, то вызвыается метод renderView. Если массив, то создается обьект контроллера и выполняется его метод.
+            //Если полученный маршрут с сервера существует в массиве routes(заданные маршруты Роутера)
+            if(str_contains($reqPath, $value)){
+                //Выбираем максимально приблеженный маршрут.
+                //1 - если запрашиваемый маршрут длинее
+                //0 - если маршруты совпадают
+                if(strcmp($reqPath, $value)  >= 1){
+                    $filterPath = $value;
+                    //Есть ли в данном маршруте получаеммый параметр, если да, 
+                    //то вызвать метод, который вырежит передаваемый параметр и запишет его в переменную.
+                    if($this->isPathContainsParam($method, $value)){
+                        $this->params['param'] = $this->takeParamFromRequestedPath($reqPath);
+                        return $filterPath;
+                    }
+                } elseif(strcmp($reqPath, $value)  === 0)
+                {
+                    return $reqPath;
+                }
+            }
+        }
+    }
 
-    Возвращаться должна call_user_func
-    */
+    //Если маршрут содержит параметр, то вернется истина
+    public function isPathContainsParam($method, $path): bool
+    {
+        if(!empty($this->routes[$method][$path][1])){
+            return true;
+        }
+        return false;
+    }
+
+    //Separates path with '/' and returns an array.
+    public function pathToArray($path): Array
+    {
+        $pathArray = explode('/', $path);
+        return $pathArray;
+    }
+
+    //Возвращает параметр из маршрута запроса
+    //Переделать, чтобы сравнивались строки и выбиралось последнее значение
+    public function takeParamFromRequestedPath($path)
+    {
+        $arr = $this->pathToArray($path);
+        return array_pop($arr);
+    }
+
     public function resolve()
     {
         $method = $this->request->getMethod();
-        $path = $this->request->getUrl();
+        $path = $this->filterRequestPath($this->request->getUrl(), $method);
 
-        $callback = $this->routes[$method][$path] ?? false;
+        $callbackData = $this->routes[$method][$path] ?? false;
 
-        if($callback === false) {
+        if(is_array($callbackData)) {
+            $callback = $callbackData[0];
+
+            if($callback === false) {
+                throw new NotFoundException();
+            }
+
+                //Если передали просто строку, то это ссылка на представление
+            if(is_string($callback)) {
+                return Application::$app->view->inputContent($callback);
+            }
+
+            if(is_array($callback)){
+                $controller = new $callback[0]();
+                
+                Application::$app->controller = $controller;//Передаем созданную сущность приложению.
+                $controller->action = $callback[1]; //Используем метод Контроллера для получения дайствия.
+                $callback[0] = $controller; //Передаю сущность контроллера
+        
+                //Тут реализовать выполнения всех middleware
+                foreach($controller->getMiddlewares() as $middleware) {
+                    $middleware->execute();
+                }
+            }
+
+            return call_user_func($callback, $this->request, $this->response, $this->params);
+
+        } else {
+            //Сделать вывод ошибки
             throw new NotFoundException();
         }
-
-        //Если передали просто строку, то это ссылка на представление
-        if(is_string($callback)) {
-            return Application::$app->view->inputContent($callback);
-        }
-
-         //создаем сущность. Передаем в контроллер приложения эту сущность  
-         if(is_array($callback)){
-            $controller = new $callback[0]();
-            
-            Application::$app->controller = $controller;//Передаем созданную сущность приложению.
-            $controller->action = $callback[1]; //Используем метод Контроллера для получения дайствия.
-            $callback[0] = $controller; //Передаю сущность контроллера
-                
-            //Тут реализовать выполнения всех middleware
-            foreach($controller->getMiddlewares() as $middleware) {
-                $middleware->execute();
-            }
-        }
-        // Вызываем выполнения controller->action с параметрами request и response. --------А нужны ли эти параметры?
-        return call_user_func($callback, $this->request, $this->response);
-
-
     }
 }
 

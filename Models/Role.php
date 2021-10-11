@@ -60,18 +60,9 @@ class Role extends DbModel
     }
 
     //Получение установка прав в апликуху
-    public function premission()
+    public function premission($usrId)
     {
-        //Получаем пользователя
-        $usrPrimKey = Application::$app->session->get('user');
-        $user = (new User())->findOne(['id' => $usrPrimKey]);
-
-        if(!$user) {
-            $this->addError('user', 'User doesnt exists');
-            return false;//Переписать!
-        }
-
-        $role = $this->hasRole($usrPrimKey);
+        $role = $this->hasRole($usrId);
 
         if($role){
             if($role->role === self::ROLE_ADMIN){

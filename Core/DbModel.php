@@ -39,7 +39,8 @@ abstract class DbModel extends Model
 
     }
 
-    public function findOne($where)
+    //Return objects of table where searching. Passed array with finding params.
+    public function findOne(array $where)
     {
         $tableName = $this->tableName();
         $attribute = array_keys($where);
@@ -84,9 +85,40 @@ abstract class DbModel extends Model
         $statement->execute();
     }
 
+    //Get rows from table. Limit valus needed.
+    public function getRowsFromTable(array $limit)
+    {
+        $limit = implode(', ', $limit);
+
+        $tableName = $this->tableName();
+
+        $sql = "SELECT * FROM $tableName LIMIT $limit";
+
+        $statement = self::prepare($sql);
+        $statement->execute();
+
+        return $statement->fetchAll(\PDO::FETCH_CLASS);
+    }
+
+    public function getRowsCount()
+    {
+        $tableName = $this->tableName();
+        $sql = "SELECT COUNT(*) FROM $tableName";
+
+        $statement = self::prepare($sql);
+        $statement->execute();
+
+        return $statement->fetchColumn();
+    }
+
     //Подготовка запроса
     public static function prepare($sql)
     {
         return Application::$app->db->pdo->prepare($sql);
+    }
+
+    public static function lastInsertId()
+    {
+        return Application::$app->db->pdo->lastInsertId();
     }
 }

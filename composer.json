@@ -2,7 +2,7 @@
     "name": "nikitasokolov/registration-form",
     "autoload": {
         "psr-4": {
-            "Nikitasokolov\\RegistrationForm\\": "src/"
+            "app\\": "./"
         }
     },
     "authors": [
@@ -10,5 +10,7 @@
             "name": "Nikita"
         }
     ],
-    "require": {}
+    "require": {
+        "vlucas/phpdotenv": "^5.3"
+    }
 }

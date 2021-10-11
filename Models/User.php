@@ -10,6 +10,7 @@ class User extends UserModel
     public string $email = "";
     public string $password = "";
     public string $confirmPassword = "";
+    public string $img_id = "";
 
     public function rules(): array
     {
@@ -18,7 +19,7 @@ class User extends UserModel
             'lastname' => [self::RULE_REQUIRED],
             'email' => [self::RULE_REQUIRED, self::RULE_EMAIL, [self::RULE_UNIQUE, 'class' => self::class ]],
             'password' => [self::RULE_REQUIRED, [self::RULE_MIN, 'min' => 8]],
-            'confirmPassword' => [self::RULE_REQUIRED, [self::RULE_MATCH, 'match' => 'password']]
+            'confirmPassword' => [self::RULE_REQUIRED, [self::RULE_MATCH, 'match' => 'password']],
         ];
     }
 
@@ -38,7 +39,8 @@ class User extends UserModel
             'firstname',
             'lastname',
             'email',
-            'password'
+            'password',
+            'img_id'
         ];
     }
 
@@ -64,7 +66,43 @@ class User extends UserModel
         $this->password = password_hash($this->password, PASSWORD_DEFAULT);
         return parent::save();
     }
+
+    public function getOneUser($id)
+    {
+        $tableName = $this->tableName();
+
+        $sql = "SELECT * FROM $tableName WHERE id = :id";
+
+        $statement = self::prepare($sql);
+        $statement->bindParam(":id", $id);
+        $statement->execute();
+        return $statement->fetchObject(self::class);
+    }
+
+    //Return object that contain user info and src to him picture.
+    public function getUserProfile($id, $imgTable)
+    {
+        $tableName = $this->tableName();
+
+        $sql = "SELECT $tableName.id, $tableName.firstname, $tableName.lastname, $imgTable.src FROM $tableName LEFT JOIN $imgTable ON $tableName.img_id = $imgTable.id WHERE $tableName.id = :id";
+        $statement = self::prepare($sql);
+        $statement->bindParam(":id", $id);
+        $statement->execute();
+        return $statement->fetch(\PDO::FETCH_OBJ);
+    }
+
+    public function getUsersForList($limit, $imgTable)
+    {
+        $tableName = $this->tableName();
+        $limit = implode(',', $limit);
+
+        $sql = "SELECT $tableName.firstname, $tableName.lastname, $imgTable.src FROM $tableName LEFT JOIN $imgTable ON $tableName.img_id = $imgTable.id LIMIT $limit";
+        $statement = self::prepare($sql);
+        $statement->execute();
+        return $statement->fetchAll(\PDO::FETCH_OBJ);
+    }
     
+
 }
 
 ?>
