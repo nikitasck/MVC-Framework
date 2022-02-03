@@ -27,7 +27,7 @@ class View
         }
 
         ob_start();
-        include_once Application::$rootDir."/Views/Layouts/$layout.php";//Подключение жиректории, в которой находится шаблон для отрисовки.
+        include_once Application::$rootDir."/Views/Layouts/$layout.php";
         return ob_get_clean();
     }
 
