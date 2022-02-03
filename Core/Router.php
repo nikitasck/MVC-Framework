@@ -44,8 +44,7 @@ class Router
         }
     }
 
-    //Возвращает маршрут отсортированный маршрут, который соотвествует заданному в routes[]. 
-    //Получает маршрут от сервера и выбирает максимально схожий маршрут из роутера.
+    //Filtering path from request for matched method and params.
     public function filterRequestPath($reqPath, $method)
     {
         //Retrieving routes with matched methods.
