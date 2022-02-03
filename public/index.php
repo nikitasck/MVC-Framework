@@ -9,13 +9,11 @@ use app\Controllers\UserController;
 use app\Core\Application;
 
 require_once __DIR__.'/../vendor/autoload.php';
-//storage dir
 
-//Загрузка dotenv файла
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
-//Этот массив передаем в конструктор приложения
+//Configuration.
 $config = [
     'user' => app\Models\User::class,
     'db' => [
@@ -24,32 +22,51 @@ $config = [
         'db_password' => $_ENV['DB_PASSWORD'],
     ]
 ];
+
+//Creating application instance
 $app = new Application(dirname(__DIR__), $config);
 
-$app->router->get('/', [SiteController::class, 'home']);//Получение домашней страницы.
+$app->router->get('/', [SiteController::class, 'home']);
 
-$app->router->get('/admin', [AdminController::class, 'adminPanel']);//Получение Админ панели.
-$app->router->get('/moderator', [ModeratorController::class, 'moderatorPanel']);//Получение панли модератора.
+//Admin panel
+$app->router->get('/admin', [AdminController::class, 'adminPanel']);
+$app->router->get('/admin/articles', [AdminController::class, 'getArticles']);//Retrieving list of all articles at admin panel
+$app->router->get('/admin/users', [AdminController::class, 'getUsers']);//Retrieving list of all users at admin panel
+$app->router->get('/admin/articles/article/', [ArticleController::class, 'getArticle'], ['{id}']);//Retrieving article by id at admin panel
+$app->router->get('/admin/users/user/', [UserController::class, 'getUser'], ['{id}']);//Retrieving article by id at admin panel
 
-$app->router->get('/admin/articles', [AdminController::class, 'showAllArticles']);//Получение всех записей админки.
-$app->router->get('/admin/users', [AdminController::class, 'showAllUsers']);//Получение всех записей админки.
-$app->router->get('/admin/articles/article/', [ArticleController::class, 'getArticle'], ['{id}']);//Если указан третий параметр в массиве, то последний индекс будет передаваться в метод.
-$app->router->get('/admin/users/user/', [UserController::class, 'getUser'], ['{id}']);//Если указан третий параметр в массиве, то последний индекс будет передаваться в метод.
+$app->router->get('/moderator', [ModeratorController::class, 'moderatorPanel']);
 
-//Авторизация
+//Registration
 $app->router->get('/register', [AuthController::class, 'register']);
 $app->router->post('/register', [AuthController::class, 'register']);
 
+//Login
 $app->router->get('/login', [AuthController::class, 'login']);
 $app->router->post('/login', [AuthController::class, 'login']);
 
-//Добавление статей
+//Lougout
+$app->router->get('/logout', [AuthController::class, 'logout']);
+
+//Creating article
 $app->router->get('/add-article', [ArticleController::class, 'addArticle']);
 $app->router->post('/add-article', [ArticleController::class, 'addArticle']);
 
-//Получение статьи по айди
-$app->router->get('/article/', [ArticleController::class, 'getArticlePage'], ['{id}']);
-$app->router->get('/user/', [UserController::class, 'getUser'], ['{id}']);
+//Updating article
+$app->router->get('/edit/article/', [ArticleController::class, 'editArticle'], ['{id}']);
+$app->router->post('/edit/article/', [ArticleController::class, 'editArticle'], ['{id}']);
+
+//delete article
+$app->router->get('/delete/article/', [ArticleController::class, 'deleteArticle'], ['{id}']);
+
+//edit user
+$app->router->get('/edit/user/', [UserController::class, 'editUser'], ['{id}']);
+$app->router->post('/edit/user/', [UserController::class, 'editUser'], ['{id}']);
+//delete user
+$app->router->get('/delete/user/', [UserController::class, 'deleteUser'], ['{id}']);
+
+$app->router->get('/article/', [ArticleController::class, 'getArticlePage'], ['{id}']);//Retrieving article by id
+$app->router->get('/user/', [UserController::class, 'getUser'], ['{id}']);//Retrieving user by id
 
 $app->router->get('/article', [ArticleController::class, 'getArticle']);
 
@@ -61,8 +78,6 @@ $app->router->get('/articles', [SiteController::class, 'getArticles']);
 
 //user profile
 $app->router->get('/profile', [UserController::class, 'getUserProfile']);
-
-$app->router->get('/logout', [AuthController::class, 'logout']);
 
 $app->run();
 

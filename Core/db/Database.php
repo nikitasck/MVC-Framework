@@ -4,6 +4,10 @@ namespace app\Core\db;
 
 use PDOException;
 
+/*
+Creating instance of the PDO class.
+*/
+
 class Database
 {
     public \PDO $pdo;
@@ -14,7 +18,6 @@ class Database
         $db_user = $config['db_user'] ?? '';
         $db_password = $config['db_password'] ?? '';
 
-        //connection to db
         try {
             $this->pdo = new \PDO($dsn,$db_user,$db_password);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -23,6 +26,7 @@ class Database
         }
     }
 
+    //Preparing sql request.
     public function prepare($sql)
     {
         return $this->pdo->prepare($sql);

@@ -99,6 +99,29 @@ class Article extends DbModel
 
     }
 
+    public function getUserArticlesForList($limit, $userId, $imgTable)
+    {
+        $tableName = $this->tableName();
+        $limit = implode(',', $limit);
+
+        $sql = "SELECT $tableName.id, $tableName.title, $imgTable.src FROM $tableName LEFT JOIN $imgTable ON $tableName.img_id = $imgTable.id WHERE $tableName.user_id = :id ORDER BY $tableName.id DESC LIMIT $limit";
+        $statement = self::prepare($sql);
+        $statement->bindParam(":id", $userId);
+        $statement->execute();
+        return $statement->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    public function getArticlesForList($limit, $imgTable)
+    {
+        $tableName = $this->tableName();
+        $limit = implode(',', $limit);
+
+        $sql = "SELECT $tableName.id, $tableName.title, $imgTable.src FROM $tableName LEFT JOIN $imgTable ON $tableName.img_id = $imgTable.id LIMIT $limit";
+        $statement = self::prepare($sql);
+        $statement->execute();
+        return $statement->fetchAll(\PDO::FETCH_OBJ);
+    }
+
 }
 
 ?>

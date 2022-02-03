@@ -64,13 +64,16 @@ $title = 'site';
       </ul>
 
       <div class="col-md-3 text-end p-1">
-        <a href="/add-article" class="border border-secondary rounded link-dark text-decoration-none p-2">Add article</a>
+          <a href="/add-article" class="border bg-success bg-gradient rounded link-light text-decoration-none p-2">Add article</a>
           <?php if(Application::$app->isGuest()): ?>
-          <a href="/login" class="border border-secondary rounded link-dark text-decoration-none p-2">Login</a>
-          <a href="/register" class="border border-secondary rounded link-dark text-decoration-none p-2">Sign-in</a>
+            <a href="/login" class="border bg-light rounded link-dark text-decoration-none p-2">Login</a>
+            <a href="/register" class="border bg-light rounded link-dark text-decoration-none p-2">Sign-in</a>
           <?php else: ?>
-          <a href="/profile" class="border border-secondary rounded link-dark text-decoration-none p-2">Profile</a>
-          <a href="/logout" class="border border-secondary rounded link-dark text-decoration-none p-2">Log out</a>
+          <?php if(Application::$app->isAdmin): ?>
+            <a href="/admin" class="border bg-warning bg-gradient rounded link-dark text-decoration-none p-2">Admin</a>
+          <?php endif; ?>
+            <a href="/profile" class="border bg-light bg-gradient  rounded link-dark text-decoration-none p-2">Profile</a>
+            <a href="/logout" class="border bg-light rounded link-dark text-decoration-none p-2">Log out</a>
           <?php endif; ?>
       </div>
 

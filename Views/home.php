@@ -16,7 +16,6 @@ header("Content-Type:doggie.png");
     </div>
   </div>
 </section>
-<?php echo var_dump(Application::$app->isAdmin) ?>
 <?php if(empty($model)): ?>
 <div class="text-center bg-light"> <h4>Not articles yet.</h4> </div>
 <?php else: ?>

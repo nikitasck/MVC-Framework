@@ -2,17 +2,14 @@
 
 namespace app\Controllers;
 
-use app\Core\Application;
 use app\Core\Controller;
 use app\Models\Role;
 use app\Models\Article;
 use app\Models\User;
-use app\Core\exception\ForbiddenExcepention;
 use app\Core\exception\NotFoundException;
 use app\Core\middleware\AdminMiddleware;
 use app\Core\Paginator;
 use app\Models\Imgs;
-use Exception;
 
 class AdminController extends Controller
 {
@@ -20,49 +17,34 @@ class AdminController extends Controller
     protected Article $article;
     protected Imgs $imgs;
     protected Role $role;
+    protected $adminInfo = [];
 
     public function __construct()
     {
+        $this->setLayout('admin');
         $this->user = new User();
         $this->article = new Article();
         $this->imgs = new Imgs();
         $this->role = new Role();
         $this->registerMiddleware(new AdminMiddleware(['adminPanel', 'showAllArticles', 'showAllUsers']));
+        $this->adminInfo['users'] = $this->user->getRowsCount();
+        $this->adminInfo['articles'] = $this->article->getRowsCount();
     }
 
+    //Display a main page of the admin panel.
     public function adminPanel()
     {
-        $this->setLayout('admin');
-        $adminInfo['users'] = $this->user->getRowsCount();
-        $adminInfo['articles'] = $this->article->getRowsCount();
-
-
         return $this->render('Admin/admin', [
-            "adminInfo" => $adminInfo
+            "adminInfo" => $this->adminInfo
         ]);
     }
 
-    public function showAllArticles()
+    //Display a list of the users in admin panel.
+    public function getUsers()
     {
-        $articles = new Article();
-        $model = $articles->getAllFromTable();
-        $arrTest = [];
-        //Получать от сюда массив articles[id => title]
-        foreach($model as $key => $value){
-            $arrTest += [$value->id => $value->title];
-        }
-
-        return $this->render('Admin/articles', [
-            "model" => $arrTest
-        ]);
-    }
-
-    public function showAllUsers()
-    {
-        $pagination = new Paginator($this->user->getRowsCount(), 10);
-        $pagArr = $pagination->getPagesArray();
-
         if($this->user->getRowsCount() > 0){
+            $pagination = new Paginator($this->user->getRowsCount(), 10);
+            
             if(!$page = $pagination->getPage()){
                 throw new NotFoundException();
             }
@@ -73,8 +55,31 @@ class AdminController extends Controller
         }
 
         return $this->render('Admin/users', [
-            "users" => $userList,
-            "pagArr" => $pagArr
+            'users' => $userList,
+            'pagArr' => $pagination->getPagesArray(),
+            'adminInfo' => $this->adminInfo
+        ]);
+    }
+
+    //Display a list of the articles in admin panel.
+    public function getArticles()
+    {
+        if($this->article->getRowsCount() > 0){
+            $pagination = new Paginator($this->article->getRowsCount(), 10);
+
+            if(!$page = $pagination->getPage()){
+                throw new NotFoundException();
+            }
+
+            $articleList = $this->article->getArticlesForList($page, $this->imgs->tableName());
+        } else {
+            $articleList = [];
+        }
+
+        return $this->render('Admin/articles', [
+            'articles' => $articleList,
+            'pagArr' => $pagination->getPagesArray(),
+            'adminInfo' => $this->adminInfo
         ]);
     }
 }

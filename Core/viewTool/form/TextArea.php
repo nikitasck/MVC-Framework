@@ -3,10 +3,10 @@
 namespace app\Core\viewTool\form;
 use app\Core\viewTool\viewToolElement;
 use app\Core\Model;
+use Attribute;
 
 class TextArea extends ViewToolElement
 {
-    //Преобразование класса в строку(если будем его выводить)
     public function __toString()
     {
         return sprintf('  
@@ -15,7 +15,7 @@ class TextArea extends ViewToolElement
             %s
         </label>
 
-        <textarea rows="5" cols="30" name="%s" value="%s" placeholder="Enter %s" class="form-control%s"></textarea>
+        <textarea rows="5" cols="30" name="%s" placeholder="Enter %s" class="form-control%s">%s</textarea>
 
         <div class="invalid-feedback">
             %s
@@ -24,9 +24,9 @@ class TextArea extends ViewToolElement
         
         $this->model->getLabel($this->attribute),
         $this->attribute,
-        $this->model->{$this->attribute},
         $this->model->getLabel($this->attribute),
         $this->model->hasError($this->attribute) ? ' is-invalid' : '',
+        $this->model->{$this->attribute},
         $this->model->getFirstError($this->attribute)
     );
     }

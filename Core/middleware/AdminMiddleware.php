@@ -2,9 +2,7 @@
 
 namespace app\Core\middleware;
 use app\Core\Application;
-use app\core\exception\ForbiddenExcepention;
-
-//Принимает действие(action), Проверяет, если пользователь гость(в приложении нет сущности пользователя, а точнее в сесии). Проверяем, пустой ли метод action или если action в приложении совпадает с получаемым методом(что?).
+use app\Core\exception\NotFoundException;
 
 class AdminMiddleware extends BaseMiddleware
 {
@@ -20,7 +18,7 @@ class AdminMiddleware extends BaseMiddleware
     {
         if(!Application::$app->isAdmin){
             if(empty($this->actions) || in_array(Application::$app->controller->action, $this->actions)) {
-                throw new ForbiddenExcepention();
+                throw new NotFoundException();
             }
         }
     }

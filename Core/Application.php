@@ -7,10 +7,7 @@ use app\Core\Request;
 use app\Core\Router;
 use app\Core\Controller;
 use app\Core\Session;
-
-/*
-Главный класс, включает в себя приложение, которое запускается при переходе на index.php. Думаю, что надо сделать этот класс синглтон или чет такое.
-*/
+use app\Models\Role;
 
 class Application
 {
@@ -27,10 +24,11 @@ class Application
     public String $layout;
     public string $userClass;
     public Bool $isAdmin = false;
+    public Role $role;
 
     public function __construct($rootDir, Array $config)
     {
-        self::$app = $this; // Создаем сингл тон нашего приложени.
+        self::$app = $this;
         self::$rootDir = $rootDir;
         $this->response = new Response();
         $this->request = new Request();
@@ -38,18 +36,24 @@ class Application
         $this->view = new View();
         $this->session = new Session();
         $this->userClass = $config['user'];
-        
+        $this->role = new Role();
         $this->layout = 'main';
-
         $this->db = new Database($config['db']);
+        $this->setUser($this->session->get('user'));
+    }
 
-        //Загрузка идентификатора пользователя из сессии. Загрузка по идентификатору модели пользователя.
-        $primaryValue = $this->session->get('user');
-
+    //Set user.
+    public function setUser($primaryValue)
+    {
         if($primaryValue) {
-            $userClassObj = new $this->userClass();//Класс пользователя получаем при инициализации приложения
-            $primaryKey = $userClassObj->primaryKey();//Получаем название идентификатора пользователя
-            $this->user = $userClassObj->findOne([$primaryKey => $primaryValue]);//Используя метод поиска пользователей в модели, загружаем в приложение обьект пользователя.
+            $userClassObj = new $this->userClass();
+            $primaryKey = $userClassObj->primaryKey();
+            $this->user = $userClassObj->findOne([$primaryKey => $primaryValue]);
+            if($this->role->premission($primaryValue)){
+                $this->isAdmin = true;
+            } else {
+                $this->isAdmin = false;
+            }
         } else {
             $this->user = null;
         }
@@ -61,7 +65,7 @@ class Application
         try {
             echo $this->router->resolve();
         } catch(\Exception $e){
-            $this->response->setStatusCode($e->getCode());//Здесь реализация сингл тона. Мы обратились к сущности/обьекту класса апп и  из него использовали метод устоновки кода ответа http класса responseCode
+            $this->response->setStatusCode($e->getCode());
             echo $this->view->resolveView('Errors/_error', [
                 'exception' => $e
             ]);
@@ -81,10 +85,11 @@ class Application
     public function logOut()
     {
         $this->user = null;
-        $this->admin = false;
+        $this->isAdmin = false;
         $this->session->remove('user');
-
+        return true;
     }
+    
 
     public static function isGuest()
     {

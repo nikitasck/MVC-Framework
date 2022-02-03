@@ -10,19 +10,19 @@ class Controller
     public string $action = '';
     protected array $middlewares = []; 
 
-    //Установка шаблона представления по умолчанию для контроллера
+    //Set view layout.
     public function setLayout(string $layout)
     {
         $this->layout = $layout;
     }
 
-    //Метод для рендера представления. Передает представления и возможные параметры в сущность представление приложения
+    //Render view.
     public function render($view, $params = [])
     {
         return Application::$app->view->resolveView($view, $params);
     }
 
-    //Исползуем для задания допустимого middleware в дочернем контролеле. Для добавления нового посредника нужно создавать нвоый обьект и устанавливать нужный action.
+    //Register middleware
     public function registerMiddleware(BaseMiddleware $middleware)
     {
         $this->middlewares[] = $middleware;

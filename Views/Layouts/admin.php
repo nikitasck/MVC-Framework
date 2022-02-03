@@ -51,44 +51,60 @@ $title = 'site';
     
   </head>
   <body class="d-flex flex-column min-vh-100">
-    
-  <div class="container">
-  <div class="container">
-    <h1>Admin panel</h1>
 
+<?php if(Application::$app->isAdmin): ?>
+<div class="container">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <a href="/admin" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none">
+        <h3 class="float-md-start mb-0">Admin Panel</h3>
+      </a>
+
+      <div class="col-md-3 text-end p-1">
+         <a href="/" class="border bg-danger rounded link-light text-decoration-none p-2">Back to the site</a>
+      </div>
+
+    </header>
     <div class="row">
-        <div class="col-4">
+        <div class="col-2">
             <ul class="list-group text-center">
                 <a href="/admin/users" class="text-decoration-none"> 
                     <li class="list-group-item">
-                        <p>Users: <b><?php echo $adminInfo['users'] ?></b></p>
+                        <p>Users: <span class="badge bg-primary rounded-pill"><?php echo $adminInfo['users'] ?></span></p>
+                        
                     </li>
                 </a>
                 <a href="/admin/articles" class="text-decoration-none"> 
                     <li class="list-group-item">
-                        <p>Articles: <b><?php echo $adminInfo['articles'] ?></b></p>
-                    </li>
-                </a>
-                <a href="" class="text-decoration-none">
-                    <li class="list-group-item">
-                        <p>Site settings.</p>
+                        <p>Articles: <span class="badge bg-primary rounded-pill"><?php echo $adminInfo['articles'] ?></span></p>
                     </li>
                 </a>
             </ul>
         </div>
-        <div class="col-8">
-            <div class="container border">
+        <div class="col-10">
+          <div class="container">
+            <?php if (Application::$app->session->getFlash('success')): ?>
+              <div class="alert alert-success">
+                <?php echo Application::$app->session->getFlash('success') ?>
+              </div>
+              <?php endif; ?>
+          </div>
+
+            <div class="container border mb-3">
                 {{content}}
             </div>
         </div>
     </div>
-</div></div>
-
+</div>
+<?php else: ?>
+    <div class="container">
+        {{content}}
+    </div>
+<?php endif; ?>
 
 
     <script src="/docs/5.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-W8fXfP3gkOKtndU4JGtKDvXbO53Wy8SZCQHczT5FMiiqmQfUpWbYdTil/SxwZgAN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.min.js" integrity="sha384-skAcpIdS7UcVUC05LJ9Dxay8AXcDYfBJqt1CJ85S/CFujBsIzCIv+l9liuYLaMQ/" crossorigin="anonymous"></script>
-      
+ 
   </body>
 </html>

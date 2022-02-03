@@ -4,7 +4,7 @@ namespace app\Core;
 
 abstract class Model
 {
-    //Required rules for validation
+    //Rules for validation
     public const RULE_REQUIRED = 'requires';
     public const RULE_MIN = 'min';
     public const RULE_MAX = 'max';
@@ -15,9 +15,10 @@ abstract class Model
     public const RULE_FILE_SIZE = 'image_size';
     public const RULE_FILE_TYPE = 'image_file_type';
 
-    //Array to storage erros from validation
+    //Contains validation errors.
     public array $errors = [];
 
+    //Messages for rules
     protected array $ruleMessages  = [
         self::RULE_REQUIRED => 'This field is required',
         self::RULE_UNIQUE => 'This field must be unique',
@@ -29,12 +30,6 @@ abstract class Model
         self::RULE_FILE_SIZE => 'Sorry, your file is too large. Max size 7mb.',
         self::RULE_FILE_TYPE => 'Please, use correct image format: jpg,jpeg,png.'  
     ];
-
-    //Appending new values to the existing ruleMassage array. Use in child class constructor.
-    public function appendRuleMessages(array $rules)
-    {
-        $this->ruleMessages = array_merge($this->ruleMessages, $rules);
-    }
 
     public function getRuleMessages(): array
     {
@@ -51,45 +46,44 @@ abstract class Model
         }
     }
 
-    //Array of labels
+    //Labels for model attribute.
     public function labels():array
     {
         return [];
     }
 
-    //Defines rules for every attributes. Result will look like arr['attributeName',['Rule-1', 'Rule-2,'...'Rule-n']]
+    //Defines rules for every attributes. Result will look like arr['attributeName' => ['Rule-1', 'Rule-2,'...'Rule-n']]
     abstract public function rules(): array;
 
-    //Checking getting rules form fules() and applyin int to every attribute
+    //Validate model attribute. If rule doesn't pass rule, insert error message in error arrays.
     public function validation()
     {
-        $arrFromRules = $this->rules();
-        foreach($arrFromRules as $attribute => $rules) {
+        foreach($this->rules() as $attribute => $rules) {
             $attr = $this->{$attribute}; //Model attribute
             foreach($rules as $rule) {
-                $ruleName = $rule; //Going deep to the array of Rules
-                if(!is_string($ruleName)) {
-                    $ruleName = $rule[0]; //This means, that rule may contain arguments like: ['RULE_MAX', 255]. But, when you have just rule, you use it?
+                $ruleName = $rule; //Get rule.
+                if(!is_string($ruleName)) {//if rule contains values.
+                    $ruleName = $rule[0]; 
                 }
             
-                //Cheking for rules matching
-                if($ruleName === self::RULE_REQUIRED && !$attr) {//If attrubute will empty, or rule name mathched with rules -> will push error 
+                //Checking for compliance with the rule.
+                if($ruleName === self::RULE_REQUIRED && !$attr) {
                     $this->addErrorForRule($attribute, self::RULE_REQUIRED);
                 }
-                if($ruleName === self::RULE_EMAIL && !filter_var($attr, FILTER_VALIDATE_EMAIL)) {//If email attribute doesnt be email, or rule name mathched with rules -> will push error 
+                if($ruleName === self::RULE_EMAIL && !filter_var($attr, FILTER_VALIDATE_EMAIL)) {
                     $this->addErrorForRule($attribute, self::RULE_EMAIL);
                 }
-                if($ruleName === self::RULE_MIN && strlen($attr) < $rule['min']) {//If attribute size will be smaller than the rule defined min value, or rule name mathched with rules -> will push error 
+                if($ruleName === self::RULE_MIN && strlen($attr) < $rule['min']) {
                     $this->addErrorForRule($attribute, self::RULE_MIN, $rule);
                 }
-                if($ruleName === self::RULE_MAX && strlen($attr) > $rule['max']) {//If attribute size will be bigger than the rule defined min value, or rule name mathched with rules -> will push error 
+                if($ruleName === self::RULE_MAX && strlen($attr) > $rule['max']) {
                     $this->addErrorForRule($attribute, self::RULE_MAX, $rule);
                 }
-                if($ruleName === self::RULE_MATCH && $attr != $this->{$rule['match']}) {//If attrubute doesnt exist in model, or rule name mathched with rules -> will push error 
+                if($ruleName === self::RULE_MATCH && $attr != $this->{$rule['match']}) {
                     $rule['match'] = $this->getLabel($rule['match']);
                     $this->addErrorForRule($attribute, self::RULE_MATCH, $rule);
                 } 
-                if($ruleName === self::RULE_UNIQUE) {//If attrubute doesnt matched with setted match value, or rule name mathched with rules -> will push error | retrive rule looks sent [self::RULE_UNIQUE, 'class' = 'password']
+                if($ruleName === self::RULE_UNIQUE) {
                     $className = $rule['class'];
                     $uniqueAttribute = $rule['attribute'] ?? $attribute;
                     $tableName = $className::tableName();
@@ -111,7 +105,7 @@ abstract class Model
                         $this->addError($attribute, 'Sorry, your file is too large. Max size 7mb.');
                     }
                 if($ruleName === self::RULE_FILE_TYPE){
-                    //Get file extension;
+                    //File extension;
                     $file = $_FILES[$attribute]['name'];
                     $fileExtension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
@@ -121,18 +115,16 @@ abstract class Model
                 }
             }
         }
-
-        //Return true if arrays with errors will be empty
-        
         return empty($this->errors);
     }
 
+    //Adding errors to the error array.
     public function addError($attribute, $message)
     {
         $this->errors[$attribute][] = $message;
     }
 
-    //Replaced {{error}} are from views
+    //Replaced {{error}} from views
     public function addErrorForRule($attribute, $rule, $params = [])
     {
         $message = $this->getRuleMessages()[$rule] ?? 'Message for this rule not created';
@@ -144,7 +136,7 @@ abstract class Model
        $this->addError($attribute, $message);
     }
 
-    //Checking for errors in the attribute
+    //Checking for errors in the attribute.
     public function hasError($attribute)
     {
         return $this->errors[$attribute] ?? false;

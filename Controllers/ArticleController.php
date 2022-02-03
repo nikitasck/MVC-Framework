@@ -5,6 +5,7 @@ namespace app\Controllers;
 use app\Core\Controller;
 use app\Core\Request;
 use app\Core\Application;
+use app\Core\exception\ForbiddenExcepention;
 use app\Core\exception\NotFoundException;
 use app\Models\Article;
 use app\Models\Imgs;
@@ -13,107 +14,117 @@ use app\Models\User;
 
 class ArticleController extends Controller
 {
+    protected $article;
+    protected $user;
+    protected $img;
+
+
     public function __construct()
     {
+        $this->article = new Article();
+        $this->user = new User();
+        $this->img = new Imgs();
         $this->registerMiddleware(new GuestMiddleware(['addArticle']));
     }
 
-    /*
-    Метод для добавления статей
-    */
+    //Show the form for creating a new article and Store a newly created article in storage.
     public function addArticle(Request $request)
     {
-        $article = new Article();
-        $img = new Imgs();
-
-        
-
         if($request->isPost()) {
-            //Firstly, upload image into the Img model, then pass Img id into article model ang registrate this.
-            $article->loadData($request->getBody());
-            $img->loadData($request->getBody());
-            //установка айди пользователя из сессии
-            $article->user_id = Application::$app->session->get('user');
+            $this->article->loadData($request->getBody());
+            $this->img->loadData($request->getBody());
 
-            //тесты
-            if($article->validation() && $img->validation() && isset($article->user_id)){
-                if($img->uploadImg() && $img->save()){
-                    $article->img_id = $img->lastInsertId();
-                    
-                    if(isset($article->img_id) && $article->save()) {
+            $this->article->user_id = Application::$app->session->get('user');
+
+            if($this->article->validation() && isset($this->article->user_id)){
+                if($this->img->validation()){
+                    if($this->img->uploadImg() && $this->img->save()){
+                        $this->article->img_id = $this->img->lastInsertId();    
+                }                    
+                    if(isset($this->article->img_id) && $this->article->save()) {
                         Application::$app->session->setFlash('success', 'Article added');
-                        //Подумать, куда перенаправить пользователя, скорее всего на страницу статей пользователя или на страницу статьи
-                        Application::$app->response->redirect('/');
+                        Application::$app->response->redirect('/article/'.$this->article->lastInsertId());
                     }
                 }
             }
-            
-            
-            /*
-            if($img->validation() && $img->uploadImg() && $img->save() && ($img_id = $img->lastInsertId())){
-                //Здесь должна быть магия. Нужно получить id созданной строки.
-                echo var_dump($img_id);
-            }
-            if($article->validation() && isset($article->user_id) && $article->save()) {
-                Application::$app->session->setFlash('success', 'Article added');
-                //Подумать, куда перенаправить пользователя, скорее всего на страницу статей пользователя или на страницу статьи
-                Application::$app->response->redirect('/');
-            }
-            */
         }
-
         return $this->render('Articles/addArticle', [
-            'model' => $article,
-            'img' => $img
+            'model' => $this->article,
+            'img' => $this->img
         ]);
     }
 
-    //Получение всех статей
-    public function getArticles()
+    //Display the specified article.
+    public function getArticlePage($request, $response, $id)
     {
-        //Получить из таблицы все записи из базы
-        //вернуть на домашнюю страницу массив этих записей
-
-        $articles = new Article();
-
-        return $this->render('home', [
-            
-        ]);
-    }
-
-    public function getArticlePage($response, $request, $id)
-    {
-        $articles = new Article();
-        $imgs = new Imgs();
-        $user = new User();
         $id = $id['param'];
 
-        $obj = $articles->getArticleObjForPage($id, $imgs->tableName(), $user->tableName());
-        $articleCards = $articles->getArticlesForCards([3], $imgs->tableName());
+        $articleObj = $this->article->getArticleObjForPage($id, $this->img->tableName(), $this->user->tableName());
+        $articleCards = $this->article->getArticlesForCards([3], $this->img->tableName());
         return $this->render('Articles/article', [
-            'model' => $obj,
+            'model' => $articleObj,
             'articleCards' => $articleCards
         ]);
 
     }
 
-    //Получение статей(множества) пользователя
-    public function getUserarticles($userId)
+    //Show the form for editing the specified resource and  Update the specified article in storage.
+    public function editArticle(Request $request,$response, $id)
     {
+        $id = $id['param'];
+        $articleObj = $this->article->getOneArticle($id);
 
+        if(Application::$app->session->get('user') === $articleObj->user_id || Application::$app->isAdmin)
+        {
+            if($request->isPost()) {
+                $this->article->loadData($request->getBody());
+                $this->img->loadData($request->getBody());
+
+                if($this->article->validation()){
+                    if($this->img->validation()){
+                        if($this->img->uploadImg() && $this->img->save()){
+                            $this->article->img_id = $this->img->lastInsertId();
+                        }
+                    }
+                    if($this->article->updateFilledAttributesForRow($id)){
+                        Application::$app->session->setFlash('success', 'Article edited');
+                        Application::$app->response->redirect("/article/$id");
+                    }
+                } else {
+                    $articleObj = $this->article;
+                }
+            }
+            
+            if(Application::$app->isAdmin){
+                $this->setLayout('admin');
+            }
+            return $this->render('Articles/editArticle', [
+                'model' => $articleObj,
+                'img' => $this->img
+            ]);
+        } else {
+            throw new NotFoundException();
+        }
     }
-    
-    //Получения статьи(одной) пользователя
-    public function getUserArticle($userId)
+
+    //Remove the specified article from storage.
+    public function deleteArticle($request,$response, $id)
     {
+        $id = $id['param'];
+        $articleObj = $this->article->getOneArticle($id);
 
-    }
-
-
-
-    //Изменения статьи.
-    public function edit($id)
-    {
+        if($articleObj){
+            if(Application::$app->session->get('user') === $articleObj->user_id || Application::$app->isAdmin){
+                if($this->article->deleteRow($id)){
+                    Application::$app->session->setFlash('success', 'Article deleted');
+                    Application::$app->response->redirect('/');
+                    if(Application::$app->isAdmin){
+                        Application::$app->session->setFlash('success', 'Article deleted');
+                        Application::$app->response->redirect('/admin');    
+                    }
+                }
+            }
+        }
 
     }
 }

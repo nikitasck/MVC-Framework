@@ -1,11 +1,13 @@
 <div class="container">
     <div class="row">
 
-      <div class="col-md-1">
+      <div class="col-md-2">
         <p><?php echo $model->firstname . ' ' . $model->lastname ?></p>
       </div>
       <div class="col-md-1">
-        <img class="img-fluid img-thumbnail" src="<?php echo $model->src ?>" alt="">
+        <div class="img ratio ratio-1x1">
+          <img class="img-fluid img-thumbnail" src="<?php echo $model->src ?>" alt="">
+        </div>
       </div>
 </div>
   

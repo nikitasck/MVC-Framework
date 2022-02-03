@@ -8,6 +8,7 @@ use app\Core\DbModel;
 class Imgs extends DbModel
 {
     public $src = "";
+    protected $defaultUserImg = 'user.png';
 
     public function tableName(): string
     {
@@ -47,7 +48,7 @@ class Imgs extends DbModel
     public function uploadImg()
     {
         //Storage directory
-        $storageDir = $this->storageCheck();
+        $storageDir = $this->storageDefine();
 
         //Getting file info.
         $uploadFile = $storageDir .'/'. basename($_FILES["src"]["name"]);
@@ -79,7 +80,7 @@ class Imgs extends DbModel
 
     //Every user has own dir specified on their id-s in '/storage' directory.
     //If directory doesn't exists we are create a new one.
-    public function storageCheck()
+    public function storageDefine()
     {
         $storageDir = Application::$rootDir.'/public/storage/user-'.$this->getUserDirectory();
 
@@ -109,6 +110,27 @@ class Imgs extends DbModel
         } else {
             return 'empty';
         }
+    }
+
+    //save image file name for default picture
+    public function setDefaultUserImageName(string $name)
+    {
+        $this->defaultUserImg = $name;
+    }
+
+    //get path + name of default user image
+    public function getPathDefaultUserImage()
+    {
+        return '/storage/default/'.$this->defaultUserImg;
+    }
+
+    //save image file name for default picture
+    public function setDefaultUserImage()
+    {
+        if($this->src = $this->getPathDefaultUserImage()){
+            return true;
+        }
+
     }
 }
 

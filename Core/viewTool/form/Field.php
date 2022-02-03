@@ -19,7 +19,6 @@ class Field extends ViewToolElement
         $this->type = self::TYPE_TEXT;
     }
 
-    //Return pattern when echo this class.
     public function __toString()
     {
         return sprintf('  

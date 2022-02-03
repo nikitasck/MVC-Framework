@@ -10,7 +10,6 @@ class Session
     {
         session_start();
 
-        //Регистрируем переменные в сессии. Устанавливаем ключ для удаления.
         $flashMessages = $_SESSION[self::FLASH_KEY] ?? [];
         foreach($flashMessages as $key => &$flashMessage) {
             $flashMessage['remove'] = true;
@@ -50,7 +49,7 @@ class Session
     public function __destruct()
     {
         $flashMessages = $_SESSION[self::FLASH_KEY] ?? [];
-        foreach($flashMessages as $key => &$flashMessage) { //Для изменения состояния, используем указатель на исходный обьект
+        foreach($flashMessages as $key => &$flashMessage) {
             if($flashMessage['remove'] === true) {
                 unset($flashMessages[$key]);
             }

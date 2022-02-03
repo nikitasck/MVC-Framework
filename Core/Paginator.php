@@ -6,11 +6,10 @@ namespace app\Core;
 
 @var $rows:              Count of rows in database. Getting value from constructor.
 @var $rowsPerPage:       Count of rows per page. Getting value from constructor.
-@var $pages:             Count of pages in paginator after manupulations.
-@var $currentPage:       Page where user are.
-@var $rowsAtCurrentPage: Numbers of rows choosen page.
-@var $pagesArray:        Pages with items on this page: [page1=>[item1, item2, item3..n], ... n]
-@var $paginator:         Result array: [[curentPage => $currentPage], [rowsAtCurrentPage => $rowsAtCurrentPage], [pages => $pages]].
+@var $pages:             Count of pagination pages.
+@var $currentPage:       Current user page.
+@var $rowsAtCurrentPage: Numbers of rows in chosen page.
+@var $pagesArray:        Pages with items on this page: [page1=>[item1, $limit], pageN=>[itemN, $limit]]
 
 */
 
@@ -22,18 +21,16 @@ class Paginator
     protected $currentPage; //if empty($current) $current = 1 or start.
     protected $rowsAtCurrentPage;
     protected $pagesArray = [];
-    protected array $paginator = [];
 
     public function __construct($rows, $rowsPerPage)
     {
         $this->rows = $rows;
         $this->rowsPerPage = $rowsPerPage;
         $this->pages = intval(ceil($rows / $rowsPerPage));
-        //$this->setPages($rows, $rowsPerPage);
         $this->setPagesArray();
     }
 
-    //Returning amount of pages with round fractions up.
+    //Get amount of pagination pages.
     public function getPages()
     {
         return $this->pages;
@@ -58,6 +55,7 @@ class Paginator
         }
     }
 
+    //The page the user is on
     public function getCurrentPage()
     {
         return $this->currentPage;
@@ -67,13 +65,11 @@ class Paginator
     public function setPagesArray()
     {
         $firstItem = 0;
-
-        //Getting count of page. And rounded it to the upper value.
         $pages = $this->getPages();
 
         for($i = 1; $i <= $pages; $i++){
 
-            //contain slice of items per page.
+            //Buffer for rows to the $i page
             $bufferArr = [];
 
             //save data from first page

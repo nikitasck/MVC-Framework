@@ -3,7 +3,6 @@
 namespace app\Models;
 
 use app\Core\DbModel;
-use app\Core\Application;
 
 class Role extends DbModel
 {
@@ -43,7 +42,7 @@ class Role extends DbModel
             'role' => 'Role'
         ];
     }
-    //Узнаем, какую роль имеем
+    //Getting user role.
     public function hasRole($userKey)
     {
         $tableName = $this->tableName();
@@ -52,14 +51,14 @@ class Role extends DbModel
         $statement->bindParam(":user_id", $userKey);
         $statement->execute();
 
-        $usrObj = $statement->fetchObject(static::class);
+        $usrObj = $statement->fetchObject();
 
         if($usrObj) {
             return $usrObj;
         }
     }
 
-    //Получение установка прав в апликуху
+    //Getting user permissions.
     public function premission($usrId)
     {
         $role = $this->hasRole($usrId);

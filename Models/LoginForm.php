@@ -28,7 +28,7 @@ class LoginForm extends Model
 
     public function login()
     {
-        $user = (new User())->findOne(['email' => $this->email]);
+        $user = (new User())->findEmail($this->email);
 
         if(!$user) {
             $this->addError('email', 'User with this email doesnt exists ');
@@ -39,7 +39,6 @@ class LoginForm extends Model
             $this->addError('password', 'Password is incorect');
             return false;
         }
-
         
         return Application::$app->login($user);
     }

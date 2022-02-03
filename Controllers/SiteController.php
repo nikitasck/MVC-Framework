@@ -21,7 +21,7 @@ class SiteController extends Controller
         $this->imgs = new Imgs();
     }
 
-    //Getting from Article model 6 latest articles and then outputting homepage with them.
+    //Getting from Article model 3 latest articles and then outputting homepage with them.
     public function home()
     {
         //Getting 6 articles.
@@ -32,15 +32,16 @@ class SiteController extends Controller
         ]);
     }
 
+    //Display 'about me' page 
     public function aboutMe()
     {
         return $this->render('/Aboutme/aboutMe', []);
     }
 
+    //Display a list of the articles.
     public function getArticles()
     {
         $pagination = new Paginator($this->article->getRowsCount(), 4);
-        $pagArr = $pagination->getPagesArray();
         
         if($this->article->getRowsCount() > 0){
             if(!$page = $pagination->getPage()){
@@ -50,13 +51,9 @@ class SiteController extends Controller
         } else {
             $articlesCards = [];
         }
-
-        
-
-        //render
         return $this->render('Articles/articles',[
             "articles" => $articlesCards,
-            "pagArr" => $pagArr ?? []
+            "pagArr" => $pagination->getPagesArray() ?? []
         ]
 
         );

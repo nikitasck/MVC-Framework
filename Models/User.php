@@ -22,6 +22,7 @@ class User extends UserModel
             'confirmPassword' => [self::RULE_REQUIRED, [self::RULE_MATCH, 'match' => 'password']],
         ];
     }
+    
 
     public function tableName():string
     {
@@ -60,13 +61,14 @@ class User extends UserModel
         return $this->firstname . ' ' . $this->lastname;
     }
 
-    //Переопределем радительский метод сохранения модели. Хешируем пароль с использыванием соли.
+    //Extending parent method. Hashing password
     public function save()
     {
         $this->password = password_hash($this->password, PASSWORD_DEFAULT);
         return parent::save();
     }
 
+    //Retrieving the specified user from database.
     public function getOneUser($id)
     {
         $tableName = $this->tableName();
@@ -96,13 +98,27 @@ class User extends UserModel
         $tableName = $this->tableName();
         $limit = implode(',', $limit);
 
-        $sql = "SELECT $tableName.firstname, $tableName.lastname, $imgTable.src FROM $tableName LEFT JOIN $imgTable ON $tableName.img_id = $imgTable.id LIMIT $limit";
+        $sql = "SELECT $tableName.id, $tableName.firstname, $tableName.lastname, $imgTable.src FROM $tableName LEFT JOIN $imgTable ON $tableName.img_id = $imgTable.id LIMIT $limit";
         $statement = self::prepare($sql);
         $statement->execute();
         return $statement->fetchAll(\PDO::FETCH_OBJ);
     }
     
+    public function findEmail($email)
+    {
+        $tableName = $this->tableName();
+        $sql = "SELECT * FROM $tableName WHERE email = :email";
 
+        $statement = self::prepare($sql);
+        $statement->bindParam(':email', $email);
+        $statement->execute();
+        return $statement->fetchObject(self::class);
+    }
+
+    public function updateUser($id)
+    {
+        
+    }
 }
 
 ?>
